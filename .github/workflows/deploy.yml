@@ -62,6 +62,23 @@ jobs:
 
       - name: Deploy to EC2
         run: |
+          # Create Nginx config
+          cat > nginx.conf << 'EOF'
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://localhost:8080;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_cache_bypass $http_upgrade;
+              }
+          }
+          EOF
+
           # Create deployment script
           cat > deploy.sh << 'EOF'
           #!/bin/bash
@@ -77,9 +94,10 @@ jobs:
           # Setup directory and permissions first
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "sudo mkdir -p /app && sudo chown ec2-user:ec2-user /app"
 
-          # Copy binary and deployment script
+          # Copy files
           scp -o StrictHostKeyChecking=no app/app ec2-user@${{ secrets.EC2_HOST }}:/app/app.new
           scp -o StrictHostKeyChecking=no deploy.sh ec2-user@${{ secrets.EC2_HOST }}:/app/deploy.sh
+          scp -o StrictHostKeyChecking=no nginx.conf ec2-user@${{ secrets.EC2_HOST }}:/tmp/nginx.conf
           
-          # Execute deployment script
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "chmod +x /app/deploy.sh && /app/deploy.sh" 
+          # Configure Nginx and deploy app
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "sudo mv /tmp/nginx.conf /etc/nginx/conf.d/app.conf && sudo systemctl restart nginx && chmod +x /app/deploy.sh && /app/deploy.sh" 

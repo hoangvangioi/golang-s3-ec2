@@ -149,27 +149,15 @@ resource "aws_instance" "app" {
               # Update system
               dnf update -y
               
-              # Install Go
-              dnf install -y golang
+              # Install Go and Nginx
+              dnf install -y golang nginx
               
               # Create app directory
               mkdir -p /app
               
-              # Copy application files
-              cat > /app/main.go << 'EOL'
-              ${file("${path.module}/app/main.go")}
-              EOL
-              
-              # Set environment variables
-              echo "export S3_BUCKET_NAME=${aws_s3_bucket.uploads.id}" >> /etc/profile
-              echo "export AWS_REGION=${var.aws_region}" >> /etc/profile
-              
-              # Build and run the application
-              cd /app
-              go mod init file-upload-s3
-              go mod tidy
-              go build -o app
-              nohup ./app &
+              # Start and enable Nginx
+              systemctl start nginx
+              systemctl enable nginx
               EOF
 
   tags = {
@@ -191,5 +179,5 @@ output "s3_bucket_name" {
 }
 
 output "app_url" {
-  value = "http://${aws_instance.app.public_ip}:8080"
+  value = "http://${aws_instance.app.public_ip}"
 }
