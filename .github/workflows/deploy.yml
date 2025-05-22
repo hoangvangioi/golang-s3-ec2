@@ -100,4 +100,4 @@ jobs:
           scp -o StrictHostKeyChecking=no nginx.conf ec2-user@${{ secrets.EC2_HOST }}:/tmp/nginx.conf
           
           # Configure Nginx and deploy app
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "sudo mv /tmp/nginx.conf /etc/nginx/conf.d/app.conf && sudo systemctl restart nginx && chmod +x /app/deploy.sh && /app/deploy.sh" 
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "sudo mkdir -p /etc/nginx/conf.d && sudo mv /tmp/nginx.conf /etc/nginx/conf.d/app.conf && sudo systemctl restart nginx && chmod +x /app/deploy.sh && /app/deploy.sh" 
