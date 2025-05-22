@@ -3,8 +3,24 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	// Set test environment variables
+	os.Setenv("S3_BUCKET_NAME", "test-bucket")
+	os.Setenv("AWS_REGION", "ap-southeast-1")
+
+	// Run tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("S3_BUCKET_NAME")
+	os.Unsetenv("AWS_REGION")
+
+	os.Exit(code)
+}
 
 func TestHomeHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/", nil)

@@ -9,6 +9,7 @@ on:
 env:
   AWS_REGION: ap-southeast-1
   EC2_HOST: ${{ secrets.EC2_HOST }}
+  S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 jobs:
