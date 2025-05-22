@@ -65,10 +65,6 @@ jobs:
           # Create deployment script
           cat > deploy.sh << 'EOF'
           #!/bin/bash
-          # Create app directory with proper permissions
-          sudo mkdir -p /app
-          sudo chown ec2-user:ec2-user /app
-          
           cd /app
           # Stop existing process if running
           pkill app || true
@@ -77,6 +73,9 @@ jobs:
           # Start application
           nohup ./app &
           EOF
+
+          # Setup directory and permissions first
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "sudo mkdir -p /app && sudo chown ec2-user:ec2-user /app"
 
           # Copy binary and deployment script
           scp -o StrictHostKeyChecking=no app/app ec2-user@${{ secrets.EC2_HOST }}:/app/app.new
