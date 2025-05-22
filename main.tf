@@ -135,59 +135,12 @@ resource "aws_s3_bucket_policy" "uploads" {
   })
 }
 
-# IAM Role for EC2
-resource "aws_iam_role" "ec2_role" {
-  name = "ec2_s3_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "ec2_s3_policy" {
-  name = "ec2_s3_policy"
-  role = aws_iam_role.ec2_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          aws_s3_bucket.uploads.arn,
-          "${aws_s3_bucket.uploads.arn}/*"
-        ]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_s3_profile"
-  role = aws_iam_role.ec2_role.name
-}
-
 # EC2 Instance
 resource "aws_instance" "app" {
   ami           = var.ec2_ami_id
   instance_type = var.ec2_instance_type
   subnet_id     = aws_subnet.public.id
   key_name      = aws_key_pair.app_key.key_name
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
 

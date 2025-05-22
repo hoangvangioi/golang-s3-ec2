@@ -65,6 +65,10 @@ jobs:
           # Create deployment script
           cat > deploy.sh << 'EOF'
           #!/bin/bash
+          # Create app directory with proper permissions
+          sudo mkdir -p /app
+          sudo chown ec2-user:ec2-user /app
+          
           cd /app
           # Stop existing process if running
           pkill app || true
